@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Toko Elektronik Cepat</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <style>
+    .product-list button {
+      margin-bottom: 10px;
+      width: 100%;
+    }
+    .slideshow img {
+      max-height: 250px;
+      object-fit: cover;
+    }
+    .order-summary {
+      background-color: #f8f9fa;
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body class="container my-4">
+
+  <header class="mb-4">
+    <h1 class="text-center">Toko Elektronik Cepat</h1>
+    <p class="text-center" id="current-time"></p>
+  </header>
+
+  <div class="row">
+    <!-- Display Produk -->
+    <div class="col-md-8">
+      <div class="slideshow text-center mb-3">
+        <img id="product-image" src="" class="img-fluid rounded" alt="Product Image"/>
+        <div class="mt-2">
+          <button class="btn btn-secondary me-2" onclick="prevImage()">Previous</button>
+          <button class="btn btn-secondary" onclick="nextImage()">Next</button>
+        </div>
+      </div>
+      <h4 id="product-name"></h4>
+      <h5 id="product-price" class="text-muted"></h5>
+    </div>
+
+    <!-- Daftar Produk -->
+    <div class="col-md-4 product-list">
+      <h5>Daftar Produk</h5>
+      <div id="product-buttons"></div>
+    </div>
+  </div>
+
+  <!-- Form Pemesanan -->
+  <div class="row mt-4">
+    <div class="col-md-6">
+      <h4>Form Pemesanan</h4>
+      <form id="order-form">
+        <div class="mb-2">
+          <label for="nama" class="form-label">Nama Pemesan</label>
+          <input type="text" id="nama" class="form-control" required />
+        </div>
+        <div class="mb-2">
+          <label for="jumlah" class="form-label">Jumlah Pesan</label>
+          <input type="number" id="jumlah" class="form-control" required min="1" />
+        </div>
+        <div class="mb-2">
+          <label for="promo" class="form-label">Kode Promo</label>
+          <input type="text" id="promo" class="form-control" />
+        </div>
+        <button type="button" class="btn btn-success" onclick="prosesPesanan()">Pesan Sekarang</button>
+      </form>
+    </div>
+
+    <!-- Output Struk -->
+    <div class="col-md-6">
+      <h4>Ringkasan Pesanan</h4>
+      <div id="output" class="order-summary"></div>
+    </div>
+  </div>
+
+  <script>
+    // Produk Data
+    const produkList = [
+      {
+        nama: "Smartphone X1",
+        harga: 3500000,
+        gambar: ["https://via.placeholder.com/400x250?text=Smartphone+1a", "https://via.placeholder.com/400x250?text=Smartphone+1b"]
+      },
+      {
+        nama: "Laptop Z Pro",
+        harga: 9500000,
+        gambar: ["https://via.placeholder.com/400x250?text=Laptop+Z1", "https://via.placeholder.com/400x250?text=Laptop+Z2"]
+      },
+      {
+        nama: "Smartwatch Q",
+        harga: 1500000,
+        gambar: ["https://via.placeholder.com/400x250?text=Smartwatch+Q1", "https://via.placeholder.com/400x250?text=Smartwatch+Q2"]
+      }
+    ];
+
+    let produkAktif = 0;
+    let gambarAktif = 0;
+
+    function tampilkanProduk(index) {
+      produkAktif = index;
+      gambarAktif = 0;
+      const produk = produkList[produkAktif];
+      document.getElementById("product-name").innerText = produk.nama;
+      document.getElementById("product-price").innerText = "Rp " + produk.harga.toLocaleString("id-ID");
+      document.getElementById("product-image").src = produk.gambar[gambarAktif];
+    }
+
+    function nextImage() {
+      const gambar = produkList[produkAktif].gambar;
+      gambarAktif = (gambarAktif + 1) % gambar.length;
+      document.getElementById("product-image").src = gambar[gambarAktif];
+    }
+
+    function prevImage() {
+      const gambar = produkList[produkAktif].gambar;
+      gambarAktif = (gambarAktif - 1 + gambar.length) % gambar.length;
+      document.getElementById("product-image").src = gambar[gambarAktif];
+    }
+
+    function buatDaftarProduk() {
+      const container = document.getElementById("product-buttons");
+      produkList.forEach((produk, i) => {
+        const btn = document.createElement("button");
+        btn.className = "btn btn-outline-primary";
+        btn.innerText = produk.nama;
+        btn.onclick = () => tampilkanProduk(i);
+        container.appendChild(btn);
+      });
+    }
+
+    function prosesPesanan() {
+      const nama = document.getElementById("nama").value.trim();
+      const jumlah = parseInt(document.getElementById("jumlah").value);
+      const kodePromo = document.getElementById("promo").value.trim().toUpperCase();
+      const produk = produkList[produkAktif];
+
+      if (!nama || isNaN(jumlah) || jumlah <= 0) {
+        alert("Nama dan jumlah harus diisi dengan benar.");
+        return;
+      }
+
+      const subtotal = produk.harga * jumlah;
+      let potongan = 0;
+
+      if (kodePromo === "DISKON10") {
+        potongan = subtotal * 0.10;
+      }
+
+      const total = subtotal - potongan;
+      const orderId = "INV-" + Math.floor(10000 + Math.random() * 90000);
+
+      document.getElementById("output").innerHTML = `
+        <p><strong>Order ID:</strong> ${orderId}</p>
+        <p><strong>Nama:</strong> ${nama}</p>
+        <p><strong>Produk:</strong> ${produk.nama}</p>
+        <p><strong>Jumlah:</strong> ${jumlah}</p>
+        <p><strong>Subtotal:</strong> Rp ${subtotal.toLocaleString("id-ID")}</p>
+        <p><strong>Potongan:</strong> Rp ${potongan.toLocaleString("id-ID")}</p>
+        <p><strong>Total Akhir:</strong> Rp ${total.toLocaleString("id-ID")}</p>
+      `;
+    }
+
+    function updateWaktu() {
+      const sekarang = new Date();
+      document.getElementById("current-time").innerText = sekarang.toLocaleString("id-ID");
+    }
+
+    setInterval(updateWaktu, 1000);
+    updateWaktu();
+    buatDaftarProduk();
+    tampilkanProduk(0);
+  </script>
+</body>
+</html>
